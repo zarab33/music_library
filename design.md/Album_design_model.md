@@ -8,15 +8,10 @@ If the table is already created in the database, you can skip this step.
 
 Otherwise, [follow this recipe to design and create the SQL schema for your table](./single_table_design_recipe_template.md).
 
-*In this template, we'll use an example table `students`*
+_In this template, we'll use an example table `students`_
 
 ```
-# EXAMPLE
 
-Table: students
-
-Columns:
-id | name | cohort_name
 ```
 
 ## 2. Create Test SQL seeds
@@ -29,7 +24,7 @@ If seed data is provided (or you already created it), you can skip this step.
 -- EXAMPLE
 -- (file: spec/seeds_{table_name}.sql)
 
--- Write your SQL seed here. 
+-- Write your SQL seed here.
 
 -- First, you'd need to truncate the table - this is so our table is emptied between each test run,
 -- so we can start with a fresh state.
@@ -40,8 +35,8 @@ TRUNCATE TABLE albums RESTART IDENTITY; -- replace with your own table name.
 -- Below this line there should only be `INSERT` statements.
 -- Replace these statements with your own seed data.
 
-INSERT INTO albums (name, genre) VALUES ('Pixies', 'Rock');
-INSERT INTO albums (name, genre) VALUES ('ABBA', 'Pop');
+INSERT INTO albums (title, release_year) VALUES ('David', 'April 2022');
+INSERT INTO albums (title, release_year) VALUES ('Anna', 'May 2022');
 ```
 
 Run this SQL file on the database to truncate (empty) the table, and insert the seed data. Be mindful of the fact any existing records in the table will be deleted.
@@ -59,14 +54,13 @@ Usually, the Model class name will be the capitalised table name (single instead
 # Table name: artists
 
 # Model class
-# (in lib/student.rb)
-class Albums
-# ... 
+# (in lib/artist.rb)
+class Album
 end
 
 # Repository class
-# (in lib/student_repository.rb)
-class AlbumsRepository
+# (in lib/artist_repository.rb)
+class AlbumRepository
 end
 ```
 
@@ -76,27 +70,27 @@ Define the attributes of your Model class. You can usually map the table columns
 
 ```ruby
 # EXAMPLE
-# Table name: Albums
+# Table name: artists
 
 # Model class
-# (in lib/Albums.rb)
+# (in lib/artist.rb)
 
-class Albums
+class Artist
 
   # Replace the attributes by your own columns.
-  attr_accessor :id, :artists, :genre
+  attr_accessor :id, :title, :release_year, :artist_id
 end
 
 # The keyword attr_accessor is a special Ruby feature
 # which allows us to set and get attributes on an object,
 # here's an example:
 #
-# Album = Albums.new
-# Album.name = 'Waterloo'
-# Album.name
+# student = Student.new
+# student.name = 'Jo'
+# student.name
 ```
 
-*You may choose to test-drive this class, but unless it contains any more logic than the example above, it is probably not needed.*
+_You may choose to test-drive this class, but unless it contains any more logic than the example above, it is probably not needed._
 
 ## 5. Define the Repository Class interface
 
@@ -106,42 +100,22 @@ Using comments, define the method signatures (arguments and return value) and wh
 
 ```ruby
 # EXAMPLE
-# Table name: students
+# Table name: artists
 
 # Repository class
-# (in lib/student_repository.rb)
+# (in lib/artist_repository.rb)
 
-class StudentRepository
+class AlbumRepository
 
   # Selecting all records
   # No arguments
   def all
-      # Executes the SQL query:
-    # SELECT id, artists, genre FROM albums;
+    # Executes the SQL query:
+    # SELECT id, title, release_year, artist_id FROM albums;
 
     # Returns an array of Album objects.
   end
 
-  # Gets a single record by its ID
-  # One argument: the id (number)
-  def find(id)
-
-    # Executes the SQL query:
-    # SELECT id, artists, genre FROM albums WHERE id = $1;
-
-    # Returns a single Album object.
-  end
-
-  # Add more methods below for each operation you'd like to implement.
-
-  # def create(album)
-  # end
-
-  # def update(album)
-  # end
-
-  # def delete(album)
-  # end
 end
 ```
 
@@ -155,35 +129,18 @@ These examples will later be encoded as RSpec tests.
 # EXAMPLES
 
 # 1
-# Get all albums
+# Get all artists
 
 repo = AlbumRepository.new
 
 albums = repo.all
+albums.length # => 2
+albums.first.title # => 'Bossanova'
+albums.first.release_year # => '1999'
+albums.first.artist_id # => '1'
+```
 
-albums.length # =>  2
-
-albums[0].id # =>  1
-albums[0].artists # =>  'Pixies'
-albums[0].genre # =>  'Rock'
-
-albums[1].id # =>  2
-albums[1].artists # =>  'ABBA'
-albums[1].genre # =>  'Pop'
-
-# 2
-# Get a single album
-
-repo = AlbumRepository.new
-
-album = repo.find(1)
-
-album.id # =>  1
-album.artists # =>  'Pixies'
-album.genre # =>  'Rock'
-
-# Add more examples for each method
-
+Encode this example as a test.
 
 ## 7. Reload the SQL seeds before each test run
 
@@ -194,34 +151,23 @@ This is so you get a fresh table contents every time you run the test suite.
 ```ruby
 # EXAMPLE
 
-# file: spec/album_repository_spec.rb
+# file: spec/student_repository_spec.rb
 
-def reset_albums_table
-  seed_sql = File.read('spec/seeds_albums.sql')
-  connection = PG.connect({ host: '127.0.0.1', dbname: 'albums' })
+def reset_students_table
+  seed_sql = File.read('spec/seeds_students.sql')
+  connection = PG.connect({ host: '127.0.0.1', dbname: 'students' })
   connection.exec(seed_sql)
 end
 
-describe AlbumRepository do
-  before(:each) do 
-    reset_albums_table
+describe StudentRepository do
+  before(:each) do
+    reset_students_table
   end
 
-  # Your tests will go here.
+  # (your tests will go here).
 end
-
 ```
 
 ## 8. Test-drive and implement the Repository class behaviour
 
 _After each test you write, follow the test-driving process of red, green, refactor to implement the behaviour._
-
-<!-- BEGIN GENERATED SECTION DO NOT EDIT -->
-
----
-
-**How was this resource?**  
-[😫](https://airtable.com/shrUJ3t7KLMqVRFKR?prefill_Repository=makersacademy%2Fdatabases&prefill_File=resources%2Frepository_class_recipe_template.md&prefill_Sentiment=😫) [😕](https://airtable.com/shrUJ3t7KLMqVRFKR?prefill_Repository=makersacademy%2Fdatabases&prefill_File=resources%2Frepository_class_recipe_template.md&prefill_Sentiment=😕) [😐](https://airtable.com/shrUJ3t7KLMqVRFKR?prefill_Repository=makersacademy%2Fdatabases&prefill_File=resources%2Frepository_class_recipe_template.md&prefill_Sentiment=😐) [🙂](https://airtable.com/shrUJ3t7KLMqVRFKR?prefill_Repository=makersacademy%2Fdatabases&prefill_File=resources%2Frepository_class_recipe_template.md&prefill_Sentiment=🙂) [😀](https://airtable.com/shrUJ3t7KLMqVRFKR?prefill_Repository=makersacademy%2Fdatabases&prefill_File=resources%2Frepository_class_recipe_template.md&prefill_Sentiment=😀)  
-Click an emoji to tell us.
-
-<!-- END GENERATED SECTION DO NOT EDIT -->
